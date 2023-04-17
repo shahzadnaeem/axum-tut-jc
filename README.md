@@ -1,8 +1,10 @@
-# Axum tutorial
+# Axum Tutorial Follow Along
 
-Following along [Rust Axum Full Course](https://youtu.be/XZtlD_m59sM)
+Following along this excellent tutorial - [Rust Axum Full Course](https://youtu.be/XZtlD_m59sM)
 
 ## Development Commands
+
+NOTE: Need --poll for my Fedora Linux setup.
 
 ```sh
 # Server
