@@ -1,48 +1,38 @@
+use axum::response::Response;
+use axum::{middleware, Router};
 use std::net::SocketAddr;
 
-use axum::{
-    extract::{Path, Query},
-    response::{Html, IntoResponse},
-    routing::get,
-    Router,
-};
-use serde::Deserialize;
+pub use self::error::{Error, Result};
+
+use crate::web::hello::hello_routes;
+use crate::web::local::local_routes;
+use crate::web::login::login_routes;
+
+mod error;
+mod web;
 
 #[tokio::main]
 async fn main() {
-    let routes_hello = Router::new()
-        .route("/hello", get(hello_handler))
-        .route("/hello2/:name", get(hello2_handler));
+    // Start server ...
 
-    // region: --- Start server
+    let routes = Router::new()
+        .merge(hello_routes())
+        .merge(login_routes())
+        .layer(middleware::map_response(response_mapper))
+        .fallback_service(local_routes());
+
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     println!("->> LISTENING on http://{addr} - http://{addr}/hello\n");
     axum::Server::bind(&addr)
-        .serve(routes_hello.into_make_service())
+        .serve(routes.into_make_service())
         .await
         .unwrap();
-    // endregion:
+}
 
-    // region: --- Hello handler
+async fn response_mapper(resp: Response) -> Response {
+    println!("->> {:<12} - reponse_mapper", "RESP_MAPPER");
 
-    #[derive(Debug, Deserialize)]
-    struct HelloParams {
-        name: Option<String>,
-    }
+    println!();
 
-    async fn hello_handler(Query(params): Query<HelloParams>) -> impl IntoResponse {
-        println!("--> {:<12} - hello_handler - {params:?}", "HANDLER");
-
-        let name = params.name.as_deref().unwrap_or("World");
-
-        Html(format!("Hello <strong>{name}</stong>"))
-    }
-
-    async fn hello2_handler(Path(name): Path<String>) -> impl IntoResponse {
-        println!("--> {:<12} - hello_handler - {name:?}", "HANDLER");
-
-        Html(format!("Hello <strong>{name}</stong>"))
-    }
-
-    // endregion:
+    resp
 }

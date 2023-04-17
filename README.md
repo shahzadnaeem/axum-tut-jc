@@ -6,7 +6,7 @@ Following along [Rust Axum Full Course](https://youtu.be/XZtlD_m59sM)
 
 ```sh
 # Server
-$ cargo watch -q -c -w src/ -x run
+$ cargo watch -q -c --poll -w src/ -x run
 
 # Tests
 $ cargo watch -q -c --poll -w tests/ -x "test -q quick_dev -- --nocapture"
