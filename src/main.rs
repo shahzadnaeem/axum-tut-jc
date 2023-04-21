@@ -18,13 +18,16 @@ mod web;
 #[tokio::main]
 async fn main() -> Result<()> {
     // Controller layer - currently only Tickets functionality
-    let controller = AppState::new().await?;
+    let state = AppState::new().await?;
+
+    let api_auth = ticket_routes(state.clone())
+        .route_layer(middleware::from_fn(web::middleware::auth::require_auth));
 
     // Set up the routes
     let routes = Router::new()
         .merge(hello_routes())
         .merge(login_routes())
-        .nest("/api", ticket_routes(controller.clone()))
+        .nest("/api", api_auth)
         .layer(middleware::map_response(response_mapper))
         .layer(CookieManagerLayer::new())
         .fallback_service(local_routes());

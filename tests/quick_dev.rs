@@ -10,7 +10,9 @@ async fn quick_dev() -> Result<()> {
 
     client.do_get("/hello2/Shaz").await?.print().await?;
 
-    // client.do_get("/src/main.rs").await?.print().await?;
+    let get_tickets_req = client.do_get("/api/tickets");
+
+    get_tickets_req.await?.print().await?;
 
     let login_req = client.do_post(
         "/api/login",
