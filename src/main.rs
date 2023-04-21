@@ -9,6 +9,7 @@ use crate::web::controller::AppState;
 use crate::web::hello::hello_routes;
 use crate::web::local::local_routes;
 use crate::web::login::login_routes;
+use crate::web::middleware::context::context_resolver;
 use crate::web::tickets::ticket_routes;
 
 mod context;
@@ -30,6 +31,10 @@ async fn main() -> Result<()> {
         .merge(login_routes())
         .nest("/api", api_auth)
         .layer(middleware::map_response(response_mapper))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            context_resolver,
+        ))
         .layer(CookieManagerLayer::new())
         .fallback_service(local_routes());
 
