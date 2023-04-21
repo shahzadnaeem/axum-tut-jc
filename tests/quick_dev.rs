@@ -1,5 +1,10 @@
+use core::time;
+use std::thread;
+
 use anyhow::Result;
 use chrono::prelude::*;
+// NOTE: Uses local modified version of https_test! See Cargo.toml
+use httpc_test::Client;
 use serde_json::json;
 
 #[tokio::test]
@@ -25,13 +30,8 @@ async fn quick_dev() -> Result<()> {
     login_req.await?.print().await?;
 
     // Two tickets
-    let title_text = new_ticket_title();
-    let create_ticket_req = client.do_post("/api/tickets", json!({ "title": title_text }));
-    create_ticket_req.await?.print().await?;
-
-    let title_text = new_ticket_title();
-    let create_ticket_req = client.do_post("/api/tickets", json!({ "title": title_text }));
-    create_ticket_req.await?.print().await?;
+    create_ticket(&client).await?;
+    create_ticket(&client).await?;
 
     // Get the tickets
     let get_tickets_req = client.do_get("/api/tickets");
@@ -44,7 +44,16 @@ async fn quick_dev() -> Result<()> {
     Ok(())
 }
 
+async fn create_ticket(client: &Client) -> Result<()> {
+    let title_text = new_ticket_title();
+    let create_ticket_req = client.do_post("/api/tickets", json!({ "title": title_text }));
+    create_ticket_req.await?.print().await?;
+
+    Ok(())
+}
+
 fn new_ticket_title() -> String {
+    thread::sleep(time::Duration::from_secs(1));
     let local_now = Local::now();
     let title_text = local_now.format("Ticket created at %H:%M:%S").to_string();
 
