@@ -33,5 +33,9 @@ async fn quick_dev() -> Result<()> {
 
     get_tickets_req.await?.print().await?;
 
+    let delete_ticket_req = client.do_delete("/api/tickets/1");
+
+    delete_ticket_req.await?.print().await?;
+
     Ok(())
 }

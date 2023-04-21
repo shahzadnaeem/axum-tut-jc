@@ -1,6 +1,8 @@
+pub mod controller;
 pub mod hello;
 pub mod local;
 pub mod login;
+pub mod middleware;
 pub mod tickets;
 
 pub const AUTH_COOKIE_NAME: &str = "auth-token";

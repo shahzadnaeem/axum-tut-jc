@@ -5,7 +5,7 @@ use tower_cookies::CookieManagerLayer;
 
 pub use self::error::{Error, Result};
 
-use crate::model::ModelController;
+use crate::web::controller::AppState;
 use crate::web::hello::hello_routes;
 use crate::web::local::local_routes;
 use crate::web::login::login_routes;
@@ -17,10 +17,10 @@ mod web;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Start server ...
+    // Controller layer - currently only Tickets functionality
+    let controller = AppState::new().await?;
 
-    let controller = ModelController::new().await?;
-
+    // Set up the routes
     let routes = Router::new()
         .merge(hello_routes())
         .merge(login_routes())
@@ -29,6 +29,7 @@ async fn main() -> Result<()> {
         .layer(CookieManagerLayer::new())
         .fallback_service(local_routes());
 
+    // Start...
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     println!("->> LISTENING on http://{addr} - http://{addr}/hello\n");
     axum::Server::bind(&addr)
