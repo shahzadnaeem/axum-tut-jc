@@ -2,33 +2,39 @@ use axum::extract::{Path, State};
 use axum::routing::{delete, post};
 use axum::{Json, Router};
 
+use crate::context::Context;
 use crate::model::tickets::{Ticket, TicketCreate};
 use crate::web::controller::AppState;
 use crate::Result;
 
 async fn create_ticket(
     State(state): State<AppState>,
+    context: Context,
     Json(data): Json<TicketCreate>,
 ) -> Result<Json<Ticket>> {
     println!("->> {:<12} - create_ticket", "HANDLER");
 
-    let created = state.create_ticket(data).await?;
+    let created = state.create_ticket(context, data).await?;
 
     Ok(Json(created))
 }
 
-async fn get_tickets(State(state): State<AppState>) -> Result<Json<Vec<Ticket>>> {
+async fn get_tickets(State(state): State<AppState>, context: Context) -> Result<Json<Vec<Ticket>>> {
     println!("->> {:<12} - get_tickets", "HANDLER");
 
-    let tickets = state.get_tickets().await?;
+    let tickets = state.get_tickets(context).await?;
 
     Ok(Json(tickets))
 }
 
-async fn delete_ticket(State(state): State<AppState>, Path(id): Path<u64>) -> Result<Json<Ticket>> {
+async fn delete_ticket(
+    State(state): State<AppState>,
+    context: Context,
+    Path(id): Path<u64>,
+) -> Result<Json<Ticket>> {
     println!("->> {:<12} - delete_ticket", "HANDLER");
 
-    let deleted = state.delete_ticket(id).await?;
+    let deleted = state.delete_ticket(context, id).await?;
 
     Ok(Json(deleted))
 }

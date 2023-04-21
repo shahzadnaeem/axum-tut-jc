@@ -11,6 +11,7 @@ use crate::web::local::local_routes;
 use crate::web::login::login_routes;
 use crate::web::tickets::ticket_routes;
 
+mod context;
 mod error;
 mod model;
 mod web;
