@@ -16,6 +16,7 @@ use crate::web::tickets::ticket_routes;
 
 mod context;
 mod error;
+mod log;
 mod model;
 mod web;
 
