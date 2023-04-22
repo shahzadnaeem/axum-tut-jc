@@ -1,4 +1,5 @@
 use axum::extract::{Path, State};
+use axum::http::StatusCode;
 use axum::routing::{delete, post};
 use axum::{Json, Router};
 
@@ -11,12 +12,12 @@ async fn create_ticket(
     State(state): State<AppState>,
     context: Context,
     Json(data): Json<TicketCreate>,
-) -> Result<Json<Ticket>> {
+) -> Result<(StatusCode, Json<Ticket>)> {
     println!("->> {:<12} - create_ticket", "HANDLER");
 
     let created = state.create_ticket(context, data).await?;
 
-    Ok(Json(created))
+    Ok((StatusCode::CREATED, Json(created)))
 }
 
 async fn get_tickets(State(state): State<AppState>, context: Context) -> Result<Json<Vec<Ticket>>> {

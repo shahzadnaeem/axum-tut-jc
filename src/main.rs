@@ -1,7 +1,9 @@
-use axum::response::Response;
-use axum::{middleware, Router};
+use axum::response::{IntoResponse, Response};
+use axum::{middleware, Json, Router};
+use serde_json::json;
 use std::net::SocketAddr;
 use tower_cookies::CookieManagerLayer;
+use uuid::Uuid;
 
 pub use self::error::{Error, Result};
 
@@ -52,7 +54,30 @@ async fn main() -> Result<()> {
 async fn response_mapper(resp: Response) -> Response {
     println!("->> {:<12} - reponse_mapper", "RESP_MAPPER");
 
+    let uuid = Uuid::new_v4();
+
+    let response_error = resp.extensions().get::<Error>();
+    let mapped_error = response_error.map(|s| s.to_client_error());
+
+    // If we have an error, update the response to include the additional info
+    let error_response = mapped_error.as_ref().map(|(status_code, client_error)| {
+        let error_body = json!({
+            "error": {
+                "type": client_error.as_ref(),
+                "req_uuid": uuid.to_string(),
+            }
+        });
+
+        println!("    ->> client_error_body: {error_body}");
+
+        (*status_code, Json(error_body)).into_response()
+    });
+
+    // TODO: Add a per request server log line
+    println!("    ->> server log - {uuid} - Error: {response_error:?}");
+
     println!();
 
-    resp
+    // Use error if there was one, or the original good response
+    error_response.unwrap_or(resp)
 }
