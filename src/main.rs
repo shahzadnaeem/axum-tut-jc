@@ -1,5 +1,7 @@
+use axum::http::{Method, StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
 use axum::{middleware, Json, Router};
+use context::Context;
 use serde_json::json;
 use std::net::SocketAddr;
 use tower_cookies::CookieManagerLayer;
@@ -7,6 +9,7 @@ use uuid::Uuid;
 
 pub use self::error::{Error, Result};
 
+use crate::log::log_request;
 use crate::web::controller::AppState;
 use crate::web::hello::hello_routes;
 use crate::web::local::local_routes;
@@ -52,7 +55,12 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn response_mapper(resp: Response) -> Response {
+async fn response_mapper(
+    context: Option<Context>,
+    uri: Uri,
+    req_method: Method,
+    resp: Response,
+) -> Response {
     println!("->> {:<12} - reponse_mapper", "RESP_MAPPER");
 
     let uuid = Uuid::new_v4();
@@ -74,8 +82,24 @@ async fn response_mapper(resp: Response) -> Response {
         (*status_code, Json(error_body)).into_response()
     });
 
+    let (status, client_error) = mapped_error.map_or((StatusCode::OK, None), |(code, error)| {
+        (code.clone(), Some(error.clone()))
+    });
+
     // TODO: Add a per request server log line
-    println!("    ->> server log - {uuid} - Error: {response_error:?}");
+    log_request(
+        uuid,
+        req_method,
+        uri,
+        status,
+        context,
+        response_error,
+        client_error,
+    )
+    .await
+    .ok();
+
+    // println!("    ->> server log - {uuid} - Error: {response_error:?}");
 
     println!();
 
