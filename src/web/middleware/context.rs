@@ -57,11 +57,11 @@ impl<S: Send + Sync> FromRequestParts<S> for Context {
 }
 
 // Parse token value into (user_id, expiry, signature)
-fn parse_token(token: String) -> Result<(u64, String, String)> {
+fn parse_token(token: String) -> Result<(i64, String, String)> {
     let (_all, user_id, exp, sig) =
         regex_captures!(r#"user-(\d+)\.(.+)\.(.+)"#, &token).ok_or(Error::AuthTokenInvalid)?;
 
-    let user_id: u64 = user_id.parse().map_err(|_| Error::AuthTokenInvalid)?;
+    let user_id: i64 = user_id.parse().map_err(|_| Error::AuthTokenInvalid)?;
 
     Ok((user_id, exp.to_string(), sig.to_string()))
 }

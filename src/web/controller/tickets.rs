@@ -13,7 +13,7 @@ impl AppState {
         let mut store = self.tickets_store.lock().unwrap();
 
         let ticket = Ticket {
-            id: store.len() as u64,
+            id: store.len() as i64,
             created_by_uid: context.user_id(),
             title: data.title,
             done: false,

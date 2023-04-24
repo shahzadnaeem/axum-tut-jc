@@ -4,8 +4,8 @@ use std::sync::{Arc, LockResult, Mutex, MutexGuard};
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Ticket {
-    pub id: u64,
-    pub created_by_uid: u64,
+    pub id: i64,
+    pub created_by_uid: i64,
     pub title: String,
     pub done: bool,
 }

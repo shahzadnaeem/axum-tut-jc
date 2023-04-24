@@ -15,7 +15,7 @@ struct RequestLogLine {
     timestamp: String, // ISO8601
 
     // User and context
-    user_id: Option<u64>,
+    user_id: Option<i64>,
 
     // http request
     req_path: String,

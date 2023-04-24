@@ -71,7 +71,8 @@ async fn create_ticket(db: &Database) -> Result<i64> {
 }
 
 async fn get_ticket(db: &Database, id: i64) -> Result<Option<Ticket>> {
-    let ticket = sqlx::query!(
+    let ticket = sqlx::query_as!(
+        Ticket,
         r#"SELECT * FROM tickets
         WHERE id = ?1"#,
         id
@@ -79,18 +80,12 @@ async fn get_ticket(db: &Database, id: i64) -> Result<Option<Ticket>> {
     .fetch_optional(&db.pool)
     .await?;
 
-    Ok(ticket.map_or(None, |rec| {
-        Some(Ticket {
-            id: rec.id as u64,
-            created_by_uid: rec.created_by_uid as u64,
-            title: rec.title.clone(),
-            done: rec.done,
-        })
-    }))
+    Ok(ticket.map_or(None, |ticket| Some(ticket)))
 }
 
 async fn get_tickets(db: &Database) -> Result<Vec<Ticket>> {
-    let tickets = sqlx::query!(
+    let tickets = sqlx::query_as!(
+        Ticket,
         r#"SELECT id, created_by_uid, title, done
         FROM tickets
         ORDER BY id"#
@@ -98,13 +93,5 @@ async fn get_tickets(db: &Database) -> Result<Vec<Ticket>> {
     .fetch_all(&db.pool)
     .await?;
 
-    Ok(tickets
-        .iter()
-        .map(|rec| Ticket {
-            id: rec.id as u64,
-            created_by_uid: rec.created_by_uid as u64,
-            title: rec.title.clone(),
-            done: rec.done,
-        })
-        .collect())
+    Ok(tickets)
 }
