@@ -9,6 +9,8 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[derive(Debug, Clone, Serialize, strum_macros::AsRefStr)]
 #[serde(tag = "type", content = "data")]
 pub enum Error {
+    DbError(String),
+
     LoginFailed,
 
     AuthNoCookie,
@@ -18,6 +20,12 @@ pub enum Error {
     DeleteTicketNotFound { id: u64 },
     // NOTE: If a new Error is added, then it will cause a compiler error...
     // NewErrorShouldTriggerCompilerError,
+}
+
+impl From<sqlx::Error> for Error {
+    fn from(value: sqlx::Error) -> Self {
+        Error::DbError(value.to_string())
+    }
 }
 
 impl IntoResponse for Error {
@@ -37,6 +45,8 @@ impl IntoResponse for Error {
 impl Error {
     pub fn to_client_error(&self) -> StatusAndClientError {
         match self {
+            Self::DbError(_msg) => (StatusCode::BAD_REQUEST, ClientError::InternalError),
+
             Self::DeleteTicketNotFound { .. } => {
                 (StatusCode::NOT_FOUND, ClientError::InvalidParams)
             }

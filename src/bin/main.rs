@@ -1,27 +1,21 @@
 use axum::http::{Method, StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
 use axum::{middleware, Json, Router};
-use context::Context;
 use serde_json::json;
 use std::net::SocketAddr;
 use tower_cookies::CookieManagerLayer;
 use uuid::Uuid;
 
-pub use self::error::{Error, Result};
-
-use crate::log::log_request;
-use crate::web::controller::AppState;
-use crate::web::hello::hello_routes;
-use crate::web::local::local_routes;
-use crate::web::login::login_routes;
-use crate::web::middleware::context::context_resolver;
-use crate::web::tickets::ticket_routes;
-
-mod context;
-mod error;
-mod log;
-mod model;
-mod web;
+use axum_tut::{
+    context::Context,
+    error::{Error, Result},
+    log::log_request,
+    web,
+    web::{
+        controller::AppState, hello::hello_routes, local::local_routes, login::login_routes,
+        middleware::context::context_resolver, tickets::ticket_routes,
+    },
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -86,7 +80,6 @@ async fn response_mapper(
         (code.clone(), Some(error.clone()))
     });
 
-    // TODO: Add a per request server log line
     log_request(
         uuid,
         req_method,
@@ -98,8 +91,6 @@ async fn response_mapper(
     )
     .await
     .ok();
-
-    // println!("    ->> server log - {uuid} - Error: {response_error:?}");
 
     println!();
 

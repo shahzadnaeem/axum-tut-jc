@@ -7,9 +7,13 @@ Following along this excellent tutorial - [Rust Axum Full Course](https://youtu.
 NOTE: Need --poll for my Fedora Linux setup.
 
 ```sh
+# Run Server and Tests below in their own terminal window
+
 # Server
-$ cargo watch -q -c --poll -w src/ -x run
+$ . ./env  # Sets required DATABASE_URL environment variable
+$ cargo watch -q -c --poll -w src/ -x "run --bin main"
 
 # Tests
+$ . ./env  # Sets required DATABASE_URL environment variable
 $ cargo watch -q -c --poll -w tests/ -x "test -q quick_dev -- --nocapture"
 ```
